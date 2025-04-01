@@ -1,0 +1,16 @@
+# Core packages
+streamlit
+pandas
+numpy
+joblib
+
+# Machine Learning
+scikit-learn
+
+# NLP (for HMM Tagger)
+spacy
+scipy
+
+# Model: en_core_web_md (not installed via pip)
+# This line is a comment reminder:
+# Run separately after install: python -m spacy download en_core_web_md
