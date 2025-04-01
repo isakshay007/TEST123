@@ -47,43 +47,54 @@ def predict_hmm(hmm_model, title, description, threshold=0.1):
 # Streamlit UI
 st.set_page_config(page_title="StackOverflow Tag Generator", layout="wide")
 st.title("🚀 StackOverflow Tag Generator")
-st.markdown("Use machine learning to predict tags for your StackOverflow-style questions!")
+st.markdown("""
+Welcome to the **StackOverflow AI Tagging System**! 🎯
+
+This application allows you to predict tags for StackOverflow-style questions using powerful machine learning models. Choose your preferred model, provide a title and description, and click **Generate Tags** to get the most relevant suggestions.
+""")
 
 # Load models
 with st.spinner("Loading models..."):
     ml_model, mlb, hmm_model = load_models()
 
-# Model selection
-model_choice = st.radio("Select Tag Prediction Model:", ["Logistic Regression (ML)", "Hidden Markov Model (HMM)"])
-
-# Input form
-with st.form("tag_form"):
-    title = st.text_input("📌 Question Title", placeholder="e.g., How to merge dictionaries in Python?")
+# Description Input First
+with st.form("desc_form"):
     description = st.text_area("📝 Question Description", placeholder="Provide more details about your issue, approach, error, etc.", height=200)
-    submitted = st.form_submit_button("Generate Tags")
+    submitted_desc = st.form_submit_button("Next: Choose Model")
 
-if submitted:
-    if not title.strip() and not description.strip():
-        st.warning("Please enter a question title or description.")
-    else:
-        with st.spinner("Generating tags..."):
-            if model_choice == "Logistic Regression (ML)":
-                tags, scores = predict_ml(ml_model, mlb, title, description)
-                st.subheader("🎯 Predicted Tags:")
-                st.write(", ".join(tags) if tags else "No tags above the threshold.")
+if submitted_desc and description.strip():
+    model_choice = st.selectbox("Select Tag Prediction Model:", ["Logistic Regression (ML)", "Hidden Markov Model (HMM)"])
 
-                st.subheader("📊 Top Tag Probabilities:")
-                for tag, score in scores[:10]:
-                    st.write(f"**{tag}**: {score:.3f}")
+    confirm = st.checkbox("✅ Are you sure about this model choice?")
 
+    if confirm:
+        # Proceed to title input and tagging
+        with st.form("tag_form"):
+            title = st.text_input("📌 Question Title", placeholder="e.g., How to merge dictionaries in Python?")
+            submitted = st.form_submit_button("Generate Tags")
+
+        if submitted:
+            if not title.strip():
+                st.warning("Please enter a question title.")
             else:
-                hmm_results = predict_hmm(hmm_model, title, description)
-                st.subheader("🎯 Predicted Tags:")
-                if hmm_results:
-                    for tag, score in hmm_results[:10]:
-                        st.write(f"**{tag}**: {score:.3f}")
-                else:
-                    st.write("No relevant tags found.")
+                with st.spinner("Generating tags..."):
+                    if model_choice == "Logistic Regression (ML)":
+                        tags, scores = predict_ml(ml_model, mlb, title, description)
+                        st.subheader("🎯 Predicted Tags:")
+                        st.write(", ".join(tags) if tags else "No tags above the threshold.")
+
+                        st.subheader("📊 Top Tag Probabilities:")
+                        for tag, score in scores[:10]:
+                            st.write(f"**{tag}**: {score:.3f}")
+
+                    else:
+                        hmm_results = predict_hmm(hmm_model, title, description)
+                        st.subheader("🎯 Predicted Tags:")
+                        if hmm_results:
+                            for tag, score in hmm_results[:10]:
+                                st.write(f"**{tag}**: {score:.3f}")
+                        else:
+                            st.write("No relevant tags found.")
 
 # Footer
 st.markdown("---")
