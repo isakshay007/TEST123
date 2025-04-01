@@ -4,11 +4,19 @@ from collections import defaultdict, Counter
 import re
 import pickle
 import spacy
+import subprocess
+import importlib.util
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import dok_matrix, csr_matrix
 
-# Load a pre-trained model (e.g., 'en_core_web_md' for medium-sized English model)
-nlp = spacy.load('en_core_web_md')
+# Load a pre-trained model (auto-download 'en_core_web_md' if not found)
+def load_spacy_model():
+    model_name = "en_core_web_md"
+    if importlib.util.find_spec(model_name) is None:
+        subprocess.run(["python", "-m", "spacy", "download", model_name], check=True)
+    return spacy.load(model_name)
+
+nlp = load_spacy_model()
 
 class HMM_Tagger:
 
